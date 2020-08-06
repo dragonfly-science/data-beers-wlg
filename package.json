@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "gatsby-transformer-remark": "^2.8.28"
+  }
+}

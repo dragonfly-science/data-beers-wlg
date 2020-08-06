@@ -1,90 +1,75 @@
-import React, { ReactElement, useCallback } from "react"
+import React, { ReactElement } from "react"
 import { Helmet } from "react-helmet"
-import { useStaticQuery, graphql } from "gatsby"
+import { graphql } from "gatsby"
 
 import Logo from "../components/Logo"
 import DragonflyLogo from "../components/DragonflyLogo"
 
-// interface Props {}
-type SiteMetadata = {
-  title: string
-  description: string
-  author: string
+import { useSiteMetadata, useGetMetadata } from "../hooks/SiteMetaData"
+
+interface Frontmatter {
+  title?: string
+  intro?: string
+  subtitle?: string
+  description?: string
+  name?: string
+  link?: {
+    label?: string
+    url?: string
+  }
 }
 
-type SiteData = {
-  site: { siteMetadata: SiteMetadata }
+interface Node {
+  frontmatter: Frontmatter
+  html: string
+  parent: {
+    name: string
+    dir: string
+  }
 }
 
-type UseSiteMetadataType = () => SiteMetadata
-
-export const useSiteMetadata: UseSiteMetadataType = () => {
-  const { site }: SiteData = useStaticQuery(
-    graphql`
-      query {
-        site {
-          siteMetadata {
-            title
-            description
-            author
-          }
-        }
-      }
-    `
-  )
-  return site.siteMetadata
+interface Edge {
+  node: Node
 }
 
-type UseGetMetadataType = (
-  options: SiteMetadata
-) => () => Array<{ name?: string; property?: string; content: string }>
+interface Content {
+  edges: Edge[]
+}
 
-const useGetMetadata: UseGetMetadataType = ({ title, description, author }) =>
-  useCallback(
-    () => [
-      {
-        name: `description`,
-        content: description,
-      },
-      {
-        property: `og:title`,
-        content: title,
-      },
-      {
-        property: `og:description`,
-        content: description,
-      },
-      {
-        property: `og:type`,
-        content: `website`,
-      },
-      {
-        name: `twitter:card`,
-        content: `summary`,
-      },
-      {
-        name: `twitter:creator`,
-        content: author,
-      },
-      {
-        name: `twitter:title`,
-        content: title,
-      },
-      {
-        name: `twitter:description`,
-        content: description,
-      },
-    ],
-    [title, description, author]
-  )
+type Props = {
+  data: { content: Content }
+}
 
-const Index = (): ReactElement => {
+const getContent = (key: string, edges: Edge[]): Edge | null => {
+  const content = edges.filter((e: Edge) => {
+    const { node } = e
+    return node.parent.name === key
+  })
+
+  return content.length === 1 ? content[0] : null
+}
+
+const getSpeakers = (edges: Edge[]): Edge[] => {
+  return edges.filter((e: Edge) => {
+    const { node } = e
+    return node.parent.dir === "speakers"
+  })
+}
+
+const Index = ({ data }: Props): JSX.Element => {
+  const { edges } = data.content
   const { title, description, author } = useSiteMetadata()
   const getMetadata = useGetMetadata({
     title,
     description,
     author,
   })
+
+  const content = getContent("content", edges)
+  const titleContent = getContent("title", edges)
+  const speakers = getContent("speakers", edges)
+  const postscript = getContent("postscript", edges)
+  const speakerRecords = getSpeakers(edges)
 
   return (
     <>
@@ -101,87 +86,70 @@ const Index = (): ReactElement => {
             height="200"
             className="mb-4 max-w-6 max-h-6 lg:max-w-full lg:max-h-full lg:mb-0"
           />
-          <div className="border-b-8 ml-0 border-black pb-4 mb-auto lg:ml-8">
-            <h1 className="font-bold text-4xl leading-tight lg:text-6xl">
-              DataBeers <br />
-              Wellington:
-            </h1>
-            <span className="text-2xl lg:text-4xl font-bold">
-              First Edition
-            </span>
-          </div>
+          {titleContent ? (
+            <div className="border-b-8 ml-0 border-black pb-4 mb-auto lg:ml-8">
+              <h1
+                className="font-bold text-4xl leading-tight lg:text-6xl"
+                dangerouslySetInnerHTML={{
+                  __html: titleContent.node.frontmatter?.title ?? "",
+                }}
+              />
+              <span
+                className="text-2xl lg:text-4xl font-bold"
+                dangerouslySetInnerHTML={{
+                  __html: titleContent.node.frontmatter?.subtitle ?? "",
+                }}
+              />
+            </div>
+          ) : null}
         </header>
-        <section className="mb-12">
-          <div className="prose lg:text-xl xl:text-2xl">
-            <p className="lead">
-              We would like to invite you to the inaugural meeting of DataBeers
-              Wellington, at 5 pm on [date] at Dragonfly Data Science, Level 4
-              Stephenson &amp; Turner House, 158 Victoria Street, Te Aro,
-              Pōneke.
-            </p>
-            <p>
-              DataBeers is a community-driven,{" "}
-              <a
-                href="https://twitter.com/search?f=users&vertical=default&q=databeers"
-                target="_blank"
-              >
-                global
-              </a>{" "}
-              series of meet-ups aiming at bringing together local technical
-              communities to talk about data science over delicious beer,
-              alcoholic or not.
-            </p>
-            <p>
-              Wellington has both great craft beer and great data science
-              artisans -- as well as data science artisans who love craft beer!
-              So this is the perfect opportunity for us all to get together,
-              learn new things from others and teach others the things we know!
-            </p>
-            <p>
-              Our first edition will take place on [date] at the Dragonfly Data
-              Science [address] at 5 pm. We will have time to chat and catch up
-              until about 5:25 pm, when our speakers will deliver their quick
-              presentations, in a{" "}
-              <a
-                href="https://en.wikipedia.org/wiki/PechaKucha"
-                target="_blank"
-              >
-                PechaKucha
-              </a>{" "}
-              format.
-            </p>
-          </div>
-        </section>
+        {content ? (
+          <section className="mb-12">
+            <div className="prose lg:text-xl xl:text-2xl">
+              <p
+                className="lead"
+                dangerouslySetInnerHTML={{
+                  __html: content.node.frontmatter?.intro ?? "",
+                }}
+              />
+
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: content.node.html,
+                }}
+              />
+            </div>
+          </section>
+        ) : null}
+
         <section className="mb-6 border-l-4 border-black px-12 py-8">
-          <h2 className="font-bold text-2xl leading-tight mb-8 lg:text-4xl">
-            We are excited to be hosting
-            <br />
-            the following speakers:
-          </h2>
-          <div className="flex flex-col justify-around mr-auto class prose lg:prose-lg max-w-none lg:flex-row">
-            <div className="flex-grow flex-basis-0 mr-0 lg:mr-8">
-              <b className="text-xl block mb-4 lg:text-2xl">
-                Cristian Marquez Russo
-              </b>
-              <p>
-                Will talk about the Argentine space programme and Google's
-                fisheries watch thing.
-              </p>
-              <p>
-                <a href="#" target="_blank">
-                  @handle
-                </a>
-              </p>
+          {speakers ? (
+            <h2
+              className="font-bold text-2xl leading-tight mb-8 lg:text-4xl"
+              dangerouslySetInnerHTML={{
+                __html: speakers.node.frontmatter?.title ?? "",
+              }}
+            />
+          ) : null}
+          {speakerRecords.length !== 0 ? (
+            <div className="flex flex-col justify-around mr-auto class prose lg:prose-lg max-w-none lg:flex-row">
+              {speakerRecords.map(
+                (e: Edge): JSX.Element => (
+                  <div className="flex-grow flex-basis-0 mr-0 lg:mr-8">
+                    <b className="text-xl block mb-4 lg:text-2xl">
+                      {e.node.frontmatter?.name}
+                    </b>
+                    <p>{e.node.frontmatter?.description}</p>
+                    {/* <p>
+                      <a href="#" target="_blank">
+                        @handle
+                      </a>
+                    </p> */}
+                  </div>
+                )
+              )}
             </div>
-            <div className="flex-grow flex-basis-0 mr-0 lg:mr-8">
-              <b className="text-xl block mb-4 lg:text-2xl">Will [Surname]</b>
-              <p>Keen AI</p>
-            </div>
-            <div className="flex-grow flex-basis-0">
-              <b className="text-xl block mb-4 lg:text-2xl">Bogdan? or Iggy</b>
-              <p>Highly productive land?</p>
-            </div>
-          </div>
+          ) : null}
         </section>
         <section className="prose lg:text-xl xl:text-2xl">
           <p>
@@ -194,14 +162,14 @@ const Index = (): ReactElement => {
             <br />
             DataBeers WLG
           </p>
-
-          <p className="italic text-base border-t-2 border-black pt-8">
-            P.S.: if you already know you would like to speak at or help
-            organize a future DataBeers event, please contact Bogdan State (
-            <a href="mailto:bogdan@scie.nz">bogdan@scie.nz</a>) or Finlay
-            Thompson (
-            <a href="mailto:finlay@dragonfly.co.nz">finlay@dragonfly.co.nz</a>).{" "}
-          </p>
+          {postscript ? (
+            <div
+              className="italic text-base border-t-2 border-black pt-4"
+              dangerouslySetInnerHTML={{
+                __html: postscript.node.html ?? "",
+              }}
+            />
+          ) : null}
         </section>
         <section className="mt-12">
           <b className="block mb-4">Sponsored by:</b>
@@ -217,5 +185,30 @@ const Index = (): ReactElement => {
     </>
   )
 }
+
+export const query = graphql`
+  query {
+    content: allMarkdownRemark(sort: { fields: frontmatter___sort }) {
+      edges {
+        node {
+          frontmatter {
+            intro
+            title
+            subtitle
+            description
+            name
+          }
+          html
+          parent {
+            ... on File {
+              name
+              dir: relativeDirectory
+            }
+          }
+        }
+      }
+    }
+  }
+`
 
 export default Index

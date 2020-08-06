@@ -3,5 +3,4 @@
  *
  * See: https://www.gatsbyjs.org/docs/browser-apis/
  */
-require("typeface-open-sans")
 require("./src/css/index.css")
