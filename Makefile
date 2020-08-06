@@ -8,19 +8,19 @@ RUN ?= docker run --init --rm -it $(PORTS) \
 		$(IMAGE)
 
 install:
-	(cd site & $(RUN) yarn install)
+	(cd site && $(RUN) yarn install)
 
 develop:
-	(cd site & $(RUN) gatsby develop)
+	(cd site && $(RUN) gatsby develop)
 
 clean:
-	(cd site & $(RUN) gatsby clean)
+	(cd site && $(RUN) gatsby clean)
 
 build:
-	(cd site & $(RUN) gatsby build)
+	(cd site && $(RUN) gatsby build)
 
 compress:
-	(cd site & $(RUN) tar -czf static-site.tgz public)
+	(cd site && $(RUN) tar -czf static-site.tgz public)
 
 interact:
 	$(RUN) bash
