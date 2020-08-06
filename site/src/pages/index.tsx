@@ -156,7 +156,7 @@ const Index = ({ data }: Props): JSX.Element => {
                   rel="noreferrer"
                 >
                   <img
-                    src={`/${e.node.frontmatter.logo}`}
+                    src={`${e.node.frontmatter.logo?.publicURL ?? ""}`}
                     alt={`${e.node.frontmatter?.title ?? ""}`}
                     className="max-w-12"
                   />
@@ -179,7 +179,9 @@ export const query = graphql`
             description
             footer
             intro
-            logo
+            logo {
+              publicURL
+            }
             name
             signature
             subtitle

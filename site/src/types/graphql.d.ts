@@ -11,7 +11,9 @@ export interface Frontmatter {
   footer?: string
   signature?: string
   url?: string
-  logo?: string
+  logo?: {
+    publicURL: string
+  }
 }
 
 export interface Node {
