@@ -11,16 +11,16 @@ install:
 	(cd site & $(RUN) yarn install)
 
 develop:
-	$(RUN) gatsby develop
+	(cd site & $(RUN) gatsby develop)
 
 clean:
-	$(RUN) gatsby clean
+	(cd site & $(RUN) gatsby clean)
 
 build:
-	$(RUN) gatsby build
+	(cd site & $(RUN) gatsby build)
 
 compress:
-	$(RUN) tar -czf static-site.tgz public
+	(cd site & $(RUN) tar -czf static-site.tgz public)
 
 interact:
 	$(RUN) bash
