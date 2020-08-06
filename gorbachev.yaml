@@ -1,4 +1,4 @@
-docker: fleek/gatsby:node-10
+docker: dragonflyscience/data-beers-gatsby-s3:1.0
 publish: data-beers
 cpus: 4
 memory: 16

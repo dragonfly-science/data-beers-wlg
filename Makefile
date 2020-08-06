@@ -1,11 +1,17 @@
 PORTS ?= -p 8000
 NETWORK ?= host
-IMAGE := fleek/gatsby:node-10
+IMAGE := dragonflyscience/data-beers-gatsby-s3:1.0
 RUN ?= docker run --init --rm -it $(PORTS) \
 		-w /work \
 		-v $$(pwd):/work \
 		--net=$(NETWORK) \
 		$(IMAGE)
+
+docker-build:
+	docker build -t $(IMAGE) .
+docker-push:
+	docker push $(IMAGE)
+docker: docker-build docker-push
 
 install:
 	(cd site && $(RUN) yarn install)
