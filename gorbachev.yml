@@ -1,0 +1,4 @@
+docker: fleek/gatsby:node-10
+publish: data-beers
+cpus: 4
+memory: 16
