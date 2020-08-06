@@ -5,10 +5,10 @@ set -euo pipefail
 
 export RUN=
 
-make -C site install
-make -C site clean
-make -C site build
-make -C site compress
+(cd site && make install)
+(cd site && make clean)
+(cd site && make build)
+(cd site && make compress)
 
 cp static-site.tgz /output
 cp -rf public/* /publish/
