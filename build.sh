@@ -8,6 +8,7 @@ export RUN=
 make install
 make clean
 make build
+make compress
 
 cp site/static-site.tgz /output
 cp -rf site/public/* /publish/
