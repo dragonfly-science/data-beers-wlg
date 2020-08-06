@@ -9,6 +9,7 @@ module.exports = {
       },
       maxWidth: {
         "6": "6rem",
+        "12": "12rem",
       },
     },
     typography: theme => ({

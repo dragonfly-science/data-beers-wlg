@@ -1,40 +1,10 @@
-import React, { ReactElement } from "react"
+import React from "react"
 import { Helmet } from "react-helmet"
 import { graphql } from "gatsby"
 
 import Logo from "../components/Logo"
-import DragonflyLogo from "../components/DragonflyLogo"
-
 import { useSiteMetadata, useGetMetadata } from "../hooks/SiteMetaData"
-
-interface Frontmatter {
-  title?: string
-  intro?: string
-  subtitle?: string
-  description?: string
-  name?: string
-  link?: {
-    label?: string
-    url?: string
-  }
-}
-
-interface Node {
-  frontmatter: Frontmatter
-  html: string
-  parent: {
-    name: string
-    dir: string
-  }
-}
-
-interface Edge {
-  node: Node
-}
-
-interface Content {
-  edges: Edge[]
-}
+import { Content, Edge } from "../types/graphql"
 
 type Props = {
   data: { content: Content }
@@ -49,10 +19,10 @@ const getContent = (key: string, edges: Edge[]): Edge | null => {
   return content.length === 1 ? content[0] : null
 }
 
-const getSpeakers = (edges: Edge[]): Edge[] => {
+const getCollection = (key: string, edges: Edge[]): Edge[] => {
   return edges.filter((e: Edge) => {
     const { node } = e
-    return node.parent.dir === "speakers"
+    return node.parent.dir === key
   })
 }
 
@@ -68,8 +38,11 @@ const Index = ({ data }: Props): JSX.Element => {
   const content = getContent("content", edges)
   const titleContent = getContent("title", edges)
   const speakers = getContent("speakers", edges)
+  const sponsors = getContent("sponsors", edges)
   const postscript = getContent("postscript", edges)
-  const speakerRecords = getSpeakers(edges)
+  const footer = getContent("footer", edges)
+  const speakerRecords = getCollection("speakers", edges)
+  const sponsorsRecords = getCollection("sponsors", edges)
 
   return (
     <>
@@ -105,7 +78,7 @@ const Index = ({ data }: Props): JSX.Element => {
         </header>
         {content ? (
           <section className="mb-12">
-            <div className="prose lg:text-xl xl:text-2xl">
+            <div className="prose lg:text-lg xl:text-xl">
               <p
                 className="lead"
                 dangerouslySetInnerHTML={{
@@ -140,28 +113,29 @@ const Index = ({ data }: Props): JSX.Element => {
                       {e.node.frontmatter?.name}
                     </b>
                     <p>{e.node.frontmatter?.description}</p>
-                    {/* <p>
-                      <a href="#" target="_blank">
-                        @handle
-                      </a>
-                    </p> */}
                   </div>
                 )
               )}
             </div>
           ) : null}
         </section>
-        <section className="prose lg:text-xl xl:text-2xl">
-          <p>
-            For those who need to get home quickly we will aim to be done by 6
-            pm. For those who have time to stick around, we will head over to
-            [insert pub] for more beer and data.
-          </p>
-          <p className="leading-tight">
-            See you soon,
-            <br />
-            DataBeers WLG
-          </p>
+        <section className="prose lg:text-lg xl:text-xl">
+          {footer ? (
+            <>
+              <p
+                dangerouslySetInnerHTML={{
+                  __html: footer.node.frontmatter?.footer ?? "",
+                }}
+              />
+              <p
+                className="leading-tight"
+                dangerouslySetInnerHTML={{
+                  __html: footer.node.frontmatter?.signature ?? "",
+                }}
+              />
+            </>
+          ) : null}
+
           {postscript ? (
             <div
               className="italic text-base border-t-2 border-black pt-4"
@@ -171,16 +145,26 @@ const Index = ({ data }: Props): JSX.Element => {
             />
           ) : null}
         </section>
-        <section className="mt-12">
-          <b className="block mb-4">Sponsored by:</b>
-          <a href="https://www.dragonfly.co.nz" target="_blank">
-            <DragonflyLogo
-              width={180}
-              height={37}
-              title="Dragonfly Data Science"
-            />
-          </a>
-        </section>
+        {sponsors && sponsorsRecords ? (
+          <section className="mt-12">
+            <b className="block mb-4">{sponsors.node.frontmatter?.title}</b>
+            {sponsorsRecords.map((e: Edge) => {
+              return (
+                <a
+                  href={e.node.frontmatter?.url ?? "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <img
+                    src={`/${e.node.frontmatter.logo}`}
+                    alt={`${e.node.frontmatter?.title ?? ""}`}
+                    className="max-w-12"
+                  />
+                </a>
+              )
+            })}
+          </section>
+        ) : null}
       </main>
     </>
   )
@@ -192,11 +176,15 @@ export const query = graphql`
       edges {
         node {
           frontmatter {
-            intro
-            title
-            subtitle
             description
+            footer
+            intro
+            logo
             name
+            signature
+            subtitle
+            title
+            url
           }
           html
           parent {
