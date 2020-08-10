@@ -6,6 +6,7 @@ module.exports = {
       },
       maxHeight: {
         "6": "6rem",
+        "12": "12rem",
       },
       maxWidth: {
         "6": "6rem",

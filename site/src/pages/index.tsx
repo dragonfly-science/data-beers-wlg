@@ -57,12 +57,12 @@ const Index = ({ data }: Props): JSX.Element => {
           <Logo
             width="201"
             height="200"
-            className="mb-4 max-w-6 max-h-6 lg:max-w-full lg:max-h-full lg:mb-0"
+            className="mb-4 max-w-12 max-h-12 lg:max-w-full lg:max-h-full lg:mb-0"
           />
           {titleContent ? (
             <div className="border-b-8 ml-0 border-black pb-4 mb-auto lg:ml-8">
               <h1
-                className="font-bold text-4xl leading-tight lg:text-6xl"
+                className="font-bold text-4xl leading-none mb-2 lg:text-6xl"
                 dangerouslySetInnerHTML={{
                   __html: titleContent.node.frontmatter?.title ?? "",
                 }}
