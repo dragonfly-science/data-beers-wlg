@@ -109,10 +109,15 @@ const Index = ({ data }: Props): JSX.Element => {
               {speakerRecords.map(
                 (e: Edge): JSX.Element => (
                   <div className="flex-grow flex-basis-0 mr-0 lg:mr-8">
-                    <b className="text-xl block mb-4 lg:text-2xl">
+                    <b className="text-xl block leading-tight lg:text-2xl">
                       {e.node.frontmatter?.name}
                     </b>
-                    <p>{e.node.frontmatter?.description}</p>
+                    {e.node.frontmatter.affiliations ? (
+                      <b className="text-lg block leading-tight italic">
+                        {e.node.frontmatter.affiliations}
+                      </b>
+                    ) : null}
+                    <p className="mt-4">{e.node.frontmatter?.description}</p>
                   </div>
                 )
               )}
@@ -177,6 +182,7 @@ export const query = graphql`
         node {
           frontmatter {
             description
+            affiliations
             footer
             intro
             logo {

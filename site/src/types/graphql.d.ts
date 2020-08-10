@@ -3,6 +3,7 @@ export interface Frontmatter {
   intro?: string
   subtitle?: string
   description?: string
+  affiliations?: string
   name?: string
   link?: {
     label?: string
